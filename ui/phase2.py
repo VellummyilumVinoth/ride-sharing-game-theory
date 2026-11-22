@@ -27,9 +27,15 @@ PLAN = [
 
 
 def render(p: DomainParams) -> None:
-    st.info("Phase 2 modules are built after the matching lectures. Each owner adds a solver in gt/ and a tab in "
-            "ui/, then registers the tab in app.py.")
-    for title, who, plan, api in PLAN:
-        with st.expander(f"{title}, owner {who}", expanded=False):
-            st.write(plan)
-            st.code(api, language="text")
+    from ui.style import card, module_header
+
+    module_header("3–6", "Phase 2 roadmap",
+                  "Modules built after the matching lectures. Each owner adds a solver in gt/, a page in ui/, and "
+                  "registers the tab in app.py.",
+                  ["Learning dynamics", "Mechanism design", "Shapley value", "Algorithmic collusion"], "Module leads")
+    cols = st.columns(2)
+    for k, (title, who, plan, api) in enumerate(PLAN):
+        with cols[k % 2]:
+            with card(title, f"Lead: {who} · Status: planned"):
+                st.write(plan)
+                st.code(api, language="text")

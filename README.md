@@ -78,6 +78,8 @@ gt/                    solvers (pure Python, no Streamlit), one file per module
   m2a_repeated.py      pure/mixed minmax, feasible set V, Folk region V*
   m2b_trigger.py       Grim Trigger, K-step cycles, augmented stage game, min-delta heatmap
 ui/                    one Streamlit page per module (tab_1a.py ... tab_2b.py, phase2.py)
+  style.py             design system: colours, Plotly template, CSS, cards, KPI tiles, status badges
+.streamlit/config.toml theme (brand colour, fonts, light mode)
 tests/                 test_solvers.py (textbook games) and test_app.py (renders every tab)
 ```
 
@@ -95,6 +97,11 @@ tests/                 test_solvers.py (textbook games) and test_app.py (renders
 
 To add a Phase 2 module: write the solver in `gt/`, a page with a `render(params)` function in `ui/`, add it to
 the `tabs` list in `app.py`, and add a test in `tests/test_solvers.py`.
+
+To keep the look consistent, build pages from `ui/style.py`: `module_header(...)` at the top, `st.metric` tiles
+for key numbers, `with card(title, subtitle):` for each section, `chart(fig)` for Plotly figures (it applies the
+shared template), `show_badge(ok, text)` for yes/no results, and `how_to_read(text)` under a chart. Use the
+colour constants (`BLUE`, `ORANGE`, `AQUA`, ...) in that order for series; never pick ad hoc colours.
 
 ## How the modules connect
 

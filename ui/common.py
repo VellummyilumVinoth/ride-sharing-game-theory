@@ -17,20 +17,44 @@ TEAM = [
 ]
 
 
+# key: (label, min, max, default, step, help)
+SLIDERS = {
+    "Q": ("Commuter demand Q (riders/hour)", 100, 5000, 400, 50, "Riders who request a trip in the zone each hour."),
+    "beta": ("Price sensitivity β (riders per Rs)", 0.1, 3.0, 1.0, 0.1,
+             "How many riders switch to the cheaper fleet for each rupee of fare gap."),
+    "sigma": ("Surge multiplier σ", 1.0, 3.0, 1.0, 0.1, "Multiplies every fare level."),
+    "c": ("Operating cost per trip c (Rs)", 100, 600, 350, 10, "Fuel, wear and driver time for one 10 km trip."),
+    "kappa": ("Platform commission κ (%)", 0, 30, 20, 1, "Share of each fare the platform keeps."),
+    "K": ("Fleet capacity K (rides/hour)", 50, 5000, 400, 50, "Most rides one fleet can serve per hour."),
+    "cap": ("Road capacity scale kₑ (×)", 0.5, 2.0, 1.0, 0.1, "Multiplies every road's capacity in Module 1C."),
+    "delta": ("Patience δ", 0.50, 0.99, 0.90, 0.01,
+              "How much fleets value tomorrow's profit (discount factor) in the repeated game."),
+}
+GROUPS = [("Market", ["Q", "beta"]), ("Pricing", ["sigma", "c", "kappa"]),
+          ("Capacity", ["K", "cap"]), ("Repeated game", ["delta"])]
+
+
+def _reset() -> None:
+    for k, spec in SLIDERS.items():
+        st.session_state[f"p_{k}"] = spec[3]
+
+
 def sidebar() -> DomainParams:
     """The shared DomainParams sliders. Every module builds its payoffs from these values."""
-    st.sidebar.header("Domain parameters")
-    st.sidebar.caption("Shared by every module. Fares are for a 10 km trip in Colombo.")
-    Q = st.sidebar.slider("Commuter demand Q (riders/hour)", 100, 5000, 400, 50)
-    sigma = st.sidebar.slider("Surge multiplier σ", 1.0, 3.0, 1.0, 0.1)
-    c = st.sidebar.slider("Operating cost per trip c (Rs)", 100, 600, 350, 10)
-    kappa = st.sidebar.slider("Platform commission κ (%)", 0, 30, 20, 1) / 100
-    beta = st.sidebar.slider("Rider price sensitivity β (riders per Rs)", 0.1, 3.0, 1.0, 0.1)
-    K = st.sidebar.slider("Fleet capacity K (rides/hour)", 50, 5000, 400, 50)
-    cap = st.sidebar.slider("Road capacity scale kₑ (×)", 0.5, 2.0, 1.0, 0.1)
-    delta = st.sidebar.slider("Patience δ", 0.50, 0.99, 0.90, 0.01)
-    return DomainParams(Q=float(Q), sigma=float(sigma), c=float(c), kappa=float(kappa),
-                        beta=float(beta), K=float(K), cap_scale=float(cap), delta=float(delta))
+    sb = st.sidebar
+    sb.markdown('<div class="gt-brand"><div class="gt-logo">GT</div><div><div class="gt-name">Ride-Sharing '
+                'Strategy Lab</div><div class="gt-sub2">CS5824 · Group I</div></div></div>', unsafe_allow_html=True)
+    sb.caption("Scenario controls are shared by every module. Fares are for a 10 km trip in Colombo.")
+    vals = {}
+    for group, keys in GROUPS:
+        sb.markdown(f'<div class="gt-side">{group}</div>', unsafe_allow_html=True)
+        for k in keys:
+            label, lo, hi, default, step, help_ = SLIDERS[k]
+            vals[k] = sb.slider(label, lo, hi, default, step, key=f"p_{k}", help=help_)
+    sb.button("Reset to defaults", on_click=_reset, icon=":material/restart_alt:", width="stretch")
+    return DomainParams(Q=float(vals["Q"]), sigma=float(vals["sigma"]), c=float(vals["c"]),
+                        kappa=float(vals["kappa"]) / 100, beta=float(vals["beta"]), K=float(vals["K"]),
+                        cap_scale=float(vals["cap"]), delta=float(vals["delta"]))
 
 
 def rs(x: float) -> str:
